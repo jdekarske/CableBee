@@ -1,0 +1,1 @@
+./gui-docker.sh -it -v $PWD/src:/catkin_ws/src osrf/ros:foxy-desktop
