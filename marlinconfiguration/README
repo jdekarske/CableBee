@@ -1,0 +1,2 @@
+These files are based on the Marlin-2.0.8.2.x-SKR-mini-E3-V2.0 configuration
+Download Marlin, overwrite the default configs with these, and compile with `default_envs = STM32F103RC_btt_maple` in platformio.ini
