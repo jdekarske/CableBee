@@ -1,8 +1,11 @@
 import serialcontrol as sc
 import numpy as np
+import time
 
 
 class Bee:
+    DEFAULT_CURRENT = 1000
+
     # room dimensions centered in door corner
     roomX = 3100  # along North wall
     roomY = 3011  # along West wall
@@ -39,6 +42,7 @@ class Bee:
         self.z = z
         self.currentPosition = [self.x, self.y, self.z]
         self.steppers = sc.StepperController()
+        self.steppers.enableSteppers()
 
     def getStringLengths(self, x, y, z):
         stringlengths = []
@@ -58,3 +62,20 @@ class Bee:
     def absoluteMove(self, x, y, z):
         self.steppers.absolutePositioning()
         self.steppers.linearMove(*self.getStringLengths(x, y, z))
+
+    # This method will tension and release the strings repeatedly to fully tension cablebee
+    #   (needs some work)
+    # def setHome(self, x, y, z):
+    #     self.steppers.setCurrent(1, 1, 1, 1) # make the stall current minimal
+    #     self.steppers.relativePositioning()
+    #     for i in range(10):
+    #         self.steppers.enableSteppers()
+    #         self.steppers.linearMove(-2, -2, -2, -2)
+    #         self.steppers.disableSteppers()
+    #         time.sleep(0.5)
+    #     self.steppers.enableSteppers()
+    #     self.steppers.setCurrent(
+    #     self.DEFAULT_CURRENT, self.DEFAULT_CURRENT, self.DEFAULT_CURRENT, self.DEFAULT_CURRENT)
+    #     self.steppers.linearMove(-15, -15, -15, -15) # tension the strings
+    #     [self.x, self.y, self.z] = x, y, z
+    #     self.setStringPosition()

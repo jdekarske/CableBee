@@ -76,12 +76,18 @@ class StepperController:
 
     def setPosition(self, x, y, z, e):
         command = 'G92 ' + 'X' + str(x) + ' Y' + \
-            str(y) + ' Z' + str(z) + ' E' + str(e)
+            str(y) + ' Z' + str(z) + ' A' + str(e)
         self.sendCommand(command)
         self.ser.readline()
 
     def linearMove(self, x, y, z, e):
         command = 'G0 ' + 'X' + str(x) + ' Y' + str(y) + \
-            ' Z' + str(z) + ' E' + str(e)
+            ' Z' + str(z) + ' A' + str(e)
+        self.sendCommand(command)
+        self.ser.readline()
+
+    def setCurrent(self,x,y,z,e):
+        command = 'M906 ' + 'X' + str(x) + ' Y' + str(y) + \
+            ' Z' + str(z) + ' A' + str(e)
         self.sendCommand(command)
         self.ser.readline()
