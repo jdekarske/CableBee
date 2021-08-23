@@ -31,6 +31,7 @@
 		"--runtime=nvidia",
 		"--env=NVIDIA_VISIBLE_DEVICES=all",
 		"--env=NVIDIA_DRIVER_CAPABILITIES=all",
+		"--device=/dev/video0"
 	],
 	// add our development stuff
 	"mounts": [
