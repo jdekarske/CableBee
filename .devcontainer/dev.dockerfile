@@ -7,7 +7,7 @@ SHELL ["/bin/bash", "-c"]
 RUN \
   apt-get update -qq && \
   apt-get -y install libgl1-mesa-glx libgl1-mesa-dri \
-  ros-foxy-usb-cam && ros-foxy-navigation2 ros-foxy-image-transport-plugins && \
+  ros-foxy-usb-cam ros-foxy-navigation2 && \
   rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /catkin_ws/src
@@ -24,7 +24,7 @@ RUN git clone -b ros2 https://github.com/ros-perception/image_pipeline.git \
   && mv image_pipeline_/* . \
   && rm -rf image_pipeline_
 
-# RUN git clone -b ros2 https://github.com/agutenkunst/fiducials.git
+RUN git clone -b launch-cleanup https://github.com/jdekarske/fiducials.git
 
 # We'll mount this separately
 # COPY src/ src/
