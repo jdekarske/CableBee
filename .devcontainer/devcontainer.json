@@ -1,40 +1,73 @@
-// For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.101.1/containers/docker-existing-dockerfile
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.205.2/containers/docker-existing-dockerfile
+// This file was created using guidelines from http://wiki.ros.org/docker/Tutorials/Hardware%20Acceleration
+// Uncomment sections below depending on your graphics card settings. If you are not sure, use `lspci | grep VGA`
+// Note that this is a starting point and should be modified per usecase.
 {
-	// Default path to open when attaching to a new container.
-	"workspaceFolder": "/catkin_ws/src",
-	"name": "Existing Dockerfile",
+	"name": "ROS devcontainer",
 	// Sets the run context to one level up instead of the .devcontainer folder.
 	"context": "..",
-	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
+	//---------
+	// Use the repository dockerfile
 	"dockerFile": "dev.dockerfile",
+	// If you want to use an image from a repo
+	// "image": "osrf/ros:melodic-desktop-full"
+	//---------
+	// Use the user so no permissions issues https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "cablebee",
+	"workspaceFolder": "/home/cablebee/catkin_ws/src/astrobee",
+	//---------
+	// Nvidia via nvidia-docker2
+	"runArgs": [
+		"--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
+		"--security-opt",
+		"apparmor:unconfined",
+		"--gpus",
+		"all",
+		// "--device=/dev/video0",
+		// "--device=/dev/video2"
+	],
+	"containerEnv": {
+		"DISPLAY": "${localEnv:DISPLAY}",
+		"QT_X11_NO_MITSHM": "1",
+		"NVIDIA_VISIBLE_DEVICES": "all",
+		"NVIDIA_DRIVER_CAPABILITIES": "all",
+		// if your rosmaster is somewhere else
+		// "ROS_MASTER_URI": "http://rosmaster:11311"
+	},
+	// Intel
+	// Before running, use command `xhost +`. See link above for the dangers of this command.
+	// "postCreateCommand": "sudo apt-get update && sudo apt-get install -y mesa-utils libgl1-mesa-dri libgl1-mesa-glx",
+	// "runArgs": [
+	// 	"--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
+	// 	"--device=/dev/dri:/dev/dri",
+	// ],
+	// "containerEnv": {
+	// 	"DISPLAY": "${localEnv:DISPLAY}",
+	// 	"QT_X11_NO_MITSHM": "1",
+	// 	// if your rosmaster is somewhere else
+	// 	// "ROS_MASTER_URI": "http://rosmaster:11311"
+	// },
+	//---------
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
-		"terminal.integrated.shell.linux": null
+		"terminal.integrated.profiles.linux": {
+			"bash": {
+				"path": "bash"
+			},
+		},
+		"terminal.integrated.defaultProfile.linux": "bash"
 	},
-	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"ms-iot.vscode-ros"
+		"ms-python.python",
+		"ms-iot.vscode-ros",
+		"ms-vscode.cpptools",
+		"redhat.vscode-yaml",
+		"redhat.vscode-xml",
 	],
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [
-	// 	9090
-	// ],
-	// You must setup xauth before doing this!
-	// This is for sharing gui stuffw
-	"runArgs": [
-		"--env=DISPLAY=:1",
-		"--env=QT_X11_NO_MITSHM=1",
-		"--env=XAUTHORITY=/tmp/.docker.xauth",
-		"--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw",
-		"--volume=/tmp/.docker.xauth:/tmp/.docker.xauth",
-		"--runtime=nvidia",
-		"--env=NVIDIA_VISIBLE_DEVICES=all",
-		"--env=NVIDIA_DRIVER_CAPABILITIES=all",
-		"--device=/dev/video0"
-	],
-	// add our development stuff
+	// mount the folders you want in the container
 	"mounts": [
-		"source=${localWorkspaceFolder},target=${containerWorkspaceFolder}/cablebee,type=bind"
+		"source=${localWorkspaceFolder}/.vscode,target=${containerWorkspaceFolder}/.vscode,type=bind",
+		"source=${localWorkspaceFolder}/src/cablebee,target=${containerWorkspaceFolder}/cablebee,type=bind",
 	],
 }

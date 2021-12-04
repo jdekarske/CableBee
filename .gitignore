@@ -4,7 +4,6 @@
 
 ### Python ###
 .venv
-.vscode
 
 ### ROS ###
 .catkin_tools/
