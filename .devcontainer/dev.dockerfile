@@ -43,7 +43,7 @@ WORKDIR /home/$USERNAME/catkin_ws/src
 
 RUN git clone -b launch-cleanup https://github.com/jdekarske/fiducials.git
 
-RUN source /opt/ros/$ROS_DISTRO/setup.bash \
+RUN source /catkin_ws/install/setup.bash \
   && sudo apt-get update -qq \
   && rosdep update \
   && rosdep install --from-path . --ignore-src -y \
