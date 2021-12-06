@@ -139,7 +139,7 @@
             "label": "install_dependencies",
             "detail": "Install all dependencies specified in the workspaces package.xml files.",
             "type": "shell",
-            "command": "source ~/catkin_ws/devel/setup.bash && sudo apt-get update && rosdep update && rosdep install --from-paths ${fileDirname} --ignore-src -y",
+            "command": "source ~/catkin_ws/install/setup.bash && sudo apt-get update && rosdep update && rosdep install --from-paths ${fileDirname} --ignore-src -y",
             "problemMatcher": []
         }
     ],
