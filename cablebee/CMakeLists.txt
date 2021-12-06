@@ -37,7 +37,6 @@ find_package(nav_msgs REQUIRED)
 # Install launch files.
 install(DIRECTORY
   launch
-  urdf
   webcamcal
   widecamcal
   DESTINATION share/${PROJECT_NAME}/
