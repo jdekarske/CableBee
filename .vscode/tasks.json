@@ -7,7 +7,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "colcon build --cmake-args '-DCMAKE_BUILD_TYPE=Debug'",
+            "command": "colcon build",
             "problemMatcher": "$gcc",
             "group": {
                 "kind": "build",

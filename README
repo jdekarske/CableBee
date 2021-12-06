@@ -1,1 +1,1 @@
-./gui-docker.sh -it -v $PWD/src:/catkin_ws/src osrf/ros:foxy-desktop
+Cablebee as a terrestrial friend of [Astrobee](https://github.com/nasa/astrobee). Instead of relying on thrusters in microgravity, Cablebee uses a parallel cable driven approach.

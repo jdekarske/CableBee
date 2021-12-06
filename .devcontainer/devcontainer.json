@@ -15,7 +15,7 @@
 	//---------
 	// Use the user so no permissions issues https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "cablebee",
-	"workspaceFolder": "/home/cablebee/catkin_ws/src/astrobee",
+	"workspaceFolder": "/home/cablebee/catkin_ws/src/cablebee",
 	//---------
 	// Nvidia via nvidia-docker2
 	"runArgs": [
@@ -64,6 +64,7 @@
 		"ms-vscode.cpptools",
 		"redhat.vscode-yaml",
 		"redhat.vscode-xml",
+		"betwo.b2-catkin-tools"
 	],
 	// mount the folders you want in the container
 	"mounts": [

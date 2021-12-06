@@ -16,8 +16,8 @@
         "./log": true
     },
     "python.autoComplete.extraPaths": [
-        "/home/astrobee/catkin_ws/devel/lib/python3/dist-packages",
-        "/opt/ros/noetic/lib/python3/dist-packages"
+        "/home/astrobee/catkin_ws/devel/lib/python3/dist-packages", //TODO
+        "/opt/ros/noetic/lib/python3/dist-packages" // TODO
     ],
     "ros.distro": "noetic",
 }

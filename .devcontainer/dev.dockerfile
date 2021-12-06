@@ -1,12 +1,9 @@
-# change the tag here when we decide the ur5e setup is finished
 FROM osrf/ros:foxy-desktop
 
 SHELL ["/bin/bash", "-c"]
 
-RUN \
-  apt-get update -qq && \
-  # ros-foxy-usb-cam ros-foxy-navigation2 && \
-  rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq && \
+  apt-get install -y ros-foxy-usb-cam ros-foxy-navigation2
 
 RUN mkdir -p /catkin_ws/src
 
@@ -26,7 +23,7 @@ RUN source /opt/ros/$ROS_DISTRO/setup.bash \
   && rosdep update \
   && rosdep install --from-path . --ignore-src -y \
   && cd .. \
-  && colcon build --cmake-args -DBUILD_TESTING=OFF
+  && colcon build
 
 # need to add a non-root user so bind mount permissions work correctly
 ARG USERNAME=cablebee
@@ -45,5 +42,12 @@ RUN mkdir -p /home/$USERNAME/catkin_ws/src
 WORKDIR /home/$USERNAME/catkin_ws/src
 
 RUN git clone -b launch-cleanup https://github.com/jdekarske/fiducials.git
+
+RUN source /opt/ros/$ROS_DISTRO/setup.bash \
+  && sudo apt-get update -qq \
+  && rosdep update \
+  && rosdep install --from-path . --ignore-src -y \
+  && cd .. \
+  && colcon build
 
 CMD ["/bin/bash"]
