@@ -72,6 +72,7 @@ class KeyHandler:
 
 if __name__ == "__main__":
     mybee = beecontrol.Bee()
+    mybee.steppers.sendCommand('G0 F2000')
     mybee.steppers.setPosition(0, 0, 0, 0)
     
     kh = KeyHandler()

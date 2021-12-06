@@ -68,7 +68,7 @@
 	],
 	// mount the folders you want in the container
 	"mounts": [
-		"source=${localWorkspaceFolder}/.vscode,target=${containerWorkspaceFolder}/.vscode,type=bind",
-		"source=${localWorkspaceFolder}/src/cablebee,target=${containerWorkspaceFolder}/cablebee,type=bind",
+		"source=${localWorkspaceFolder}/.devcontainer/.vscode,target=${containerWorkspaceFolder}/.vscode,type=bind",
+		"source=${localWorkspaceFolder},target=${containerWorkspaceFolder}/cablebee,type=bind",
 	],
 }

@@ -24,8 +24,6 @@ def generate_launch_description():
         declare_rviz_config_file_cmd,
         Node(package='robot_state_publisher', executable='robot_state_publisher',
              output='screen', parameters=[rsp_params]),
-        Node(package='joint_state_publisher_gui', executable='joint_state_publisher_gui',
-             output='screen', parameters=[rsp_params, {'use_gui': True}]),
         Node(
             package='rviz2',
             executable='rviz2',

@@ -1,16 +1,22 @@
 import beecontrol
 
-JASON_HOME = [1497, 979, 280]
-ADAPTER_HOME = [1500,1000,2200]
+JASON_HOME = [1445, 1143, 280]
+ADAPTER_HOME = [1500,1100,2200]
 
-mybee = beecontrol.Bee(1497, 979, 280)
+mybee = beecontrol.Bee(*JASON_HOME)
 print(mybee.currentStringLengths())
-mybee.steppers.setPosition(0,0,0,0)
 mybee.setStringPosition()
-mybee.setHome(*JASON_HOME)
+# mybee.setHome(*JASON_HOME)
+
+# desk high room square
+mybee.steppers.sendCommand('G0 F3000')
+mybee.absoluteMove(600,600,1200)
+mybee.absoluteMove(2400,600,1200)
+mybee.absoluteMove(600,2000,1200)
+mybee.absoluteMove(2400,2000,1200)
 
 # do a square #20mm/s/s is conservative acceleration, 10 is slow, 40 good
-mybee.steppers.sendCommand('G0 F6000')
+mybee.steppers.sendCommand('G0 F2000')
 mybee.absoluteMove(1500,1000,1500)
 mybee.absoluteMove(1500,1500,1500)
 mybee.absoluteMove(1500,1500,1000)

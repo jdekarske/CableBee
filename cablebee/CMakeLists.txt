@@ -19,12 +19,17 @@ endif()
 find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 add_executable(cablebee_node src/cablebee_node.cpp)
 target_include_directories(cablebee_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(cablebee_node rclcpp tf2 nav_msgs)
+
 
 install(TARGETS cablebee_node
   DESTINATION lib/${PROJECT_NAME})
@@ -33,6 +38,8 @@ install(TARGETS cablebee_node
 install(DIRECTORY
   launch
   urdf
+  webcamcal
+  widecamcal
   DESTINATION share/${PROJECT_NAME}/
 )
 

@@ -17,7 +17,7 @@ class Bee:
     anchorZ = np.array([roomX-103,   112,        roomZ-30])
     anchorE = np.array([130,         95,         roomZ-30])
 
-    anchors = [anchorX, anchorY, anchorZ, anchorE]
+    anchors = np.array([anchorX, anchorY, anchorZ, anchorE])
 
     # offsets (faces away from bee)
     # offset = 80  # mm
@@ -32,7 +32,7 @@ class Bee:
     offsetZ = np.array([0,   0,   0])
     offsetE = np.array([0,   0,   0])
 
-    offsets = [offsetX, offsetY, offsetZ, offsetE]
+    offsets = np.array([offsetX, offsetY, offsetZ, offsetE])
 
     steppers = None
 
