@@ -2,9 +2,11 @@
 
 static TIM_HandleTypeDef htim2 = {
     .Instance = TIM2};
-uint16_t step;
-uint16_t stepduration;
-uint16_t stepperiod;
+
+float count;
+float lastcount; // c_i-1
+float nextcount; // c_i
+uint32_t step;   // n
 
 int error = 0;
 
@@ -15,17 +17,43 @@ void TIM2_IRQHandler(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (step == stepperiod)
+  if (step > 200 * 8 * 10)
   {
-    HAL_GPIO_WritePin(X_STEP_PORT, X_STEP_PIN, GPIO_PIN_SET);
-  }
-  else if (step > stepperiod + stepduration)
-  {
-    HAL_GPIO_WritePin(X_STEP_PORT, X_STEP_PIN, GPIO_PIN_RESET);
-    step = 0;
+    error = 1;
+    return;
   }
 
-  step++;
+  count++;
+  if (count >= nextcount)
+  {
+    // do a step
+    HAL_GPIO_WritePin(X_STEP_PORT, X_STEP_PIN, GPIO_PIN_SET);
+    // at 72Mhz 8 NOPs= 112ns > 100ns min step.
+    // okay it even works with none... is HAL GPIO really that slow? I wish I could find my oscilloscope.
+    // for (size_t i = 0; i < 8; i++)
+    // {
+    //   __ASM volatile("NOP");
+    // }
+    HAL_GPIO_WritePin(X_STEP_PORT, X_STEP_PIN, GPIO_PIN_RESET);
+
+    // calculate where to step next
+    // https://www.embedded.com/generate-stepper-motor-speed-profiles-in-real-time/
+    nextcount = nextcount - ((2 * nextcount) / (float)(4 * step + 1));
+
+    // check we aren't too fast
+    if (nextcount > 80)
+    {
+      step++;
+    }
+    else
+    {
+      // if too fast use the old step period
+      nextcount = 80;
+    }
+
+    lastcount = count;
+    count = 0;
+  }
 }
 
 void SysTick_Handler(void)
@@ -71,9 +99,9 @@ void SystemClock_Config(void)
 
 void TIM2_Init(void)
 {
-  htim2.Init.Prescaler = 7 - 1;
+  htim2.Init.Prescaler = 72 - 1; // 1 us period
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 10 - 1;
+  htim2.Init.Period = 1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.RepetitionCounter = 0;
   // htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
@@ -84,10 +112,11 @@ void TIM2_Init(void)
   }
 }
 
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base) {
-    __HAL_RCC_TIM2_CLK_ENABLE();
-    HAL_NVIC_SetPriority(TIM2_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(TIM2_IRQn);
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim_base)
+{
+  __HAL_RCC_TIM2_CLK_ENABLE();
+  HAL_NVIC_SetPriority(TIM2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(TIM2_IRQn);
 }
 
 void GPIO_Init()
@@ -115,9 +144,13 @@ int main(void)
   GPIO_Init();
   TIM2_Init();
 
-  step = 0;
-  stepduration = 2; // 500 ns
-  stepperiod = 50;  // 1ms
+  lastcount = 3000.0;
+  count = 0;
+  nextcount = lastcount;
+  step = 1;
+  // stepperiod = 8; // 4us
+
+  HAL_Delay(1000);
 
   if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK)
   {
