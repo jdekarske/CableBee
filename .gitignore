@@ -1,3 +1,5 @@
+# TODO use a gitignore for each directory since these are seperate componenets
+# e.g. lib shouldn't be ignored in pio
 
 ### Project ###
 
@@ -12,7 +14,7 @@ logs/
 log/
 build/
 bin/
-lib/
+# lib/
 msg_gen/
 srv_gen/
 msg/*Action.msg

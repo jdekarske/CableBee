@@ -1,12 +1,24 @@
 #include "main.h"
+#include <traj_gen.h>
+
+#include <math.h>
+
+#define MOTOR_STEP_ANGLE 1.8f      // deg
+#define CLOCK_FREQ 72000000        // Hz
+#define STEPPER_TIMER_FREQ 1000000 // Hz
+#define MIN_STEP_PERIOD 80         // us
+#define ANG_ACCEL 800000           // deg/s^2
 
 static TIM_HandleTypeDef htim2 = {
     .Instance = TIM2};
 
+// speed control params
 float count;
 float lastcount; // c_i-1
 float nextcount; // c_i
-uint32_t step;   // n
+int32_t step;    // n
+
+int stepcommands[10];
 
 int error = 0;
 
@@ -17,12 +29,6 @@ void TIM2_IRQHandler(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (step > 200 * 8 * 10)
-  {
-    error = 1;
-    return;
-  }
-
   count++;
   if (count >= nextcount)
   {
@@ -38,7 +44,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
     // calculate where to step next
     // https://www.embedded.com/generate-stepper-motor-speed-profiles-in-real-time/
-    nextcount = nextcount - ((2 * nextcount) / (float)(4 * step + 1));
+    nextcount = nextcount - ((2 * nextcount) / (4 * step + 1));
 
     // check we aren't too fast
     if (nextcount > 80)
@@ -135,8 +141,6 @@ void GPIO_Init()
   HAL_GPIO_WritePin(X_DIR_PORT, X_DIR_PIN, GPIO_PIN_RESET);
 }
 
-uint16_t cnt;
-
 int main(void)
 {
   HAL_Init();
@@ -144,7 +148,7 @@ int main(void)
   GPIO_Init();
   TIM2_Init();
 
-  lastcount = 3000.0;
+  lastcount = STEPPER_TIMER_FREQ * sqrtf(2 * MOTOR_STEP_ANGLE / ANG_ACCEL); // calculate the first step count delay
   count = 0;
   nextcount = lastcount;
   step = 1;
