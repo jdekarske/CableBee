@@ -1,26 +1,31 @@
 #include "main.h"
 #include <traj_gen.h>
 
-#include <math.h>
-
-#define MOTOR_STEP_ANGLE 1.8f      // deg
-#define CLOCK_FREQ 72000000        // Hz
-#define STEPPER_TIMER_FREQ 1000000 // Hz
-#define MIN_STEP_PERIOD 80         // us
-#define ANG_ACCEL 800000           // deg/s^2
-
-static TIM_HandleTypeDef htim2 = {
-    .Instance = TIM2};
+#define MOTOR_STEP_ANGLE 1.8f // deg
+#define MICROSTEPS 8
+#define DEGREES_PER_STEP (MOTOR_STEP_ANGLE / MICROSTEPS)
+#define CLOCK_FREQ 72000000                       // Hz
+#define STEPPER_TIMER_FREQ 1000000                // Hz
+#define MIN_STEP_PERIOD 80                        // us
+#define ANG_ACCEL 500000                          // deg/s^2
+#define STEP_ACCEL (ANG_ACCEL * MOTOR_STEP_ANGLE) // stp/s^2
 
 // speed control params
-float count;
-float lastcount; // c_i-1
-float nextcount; // c_i
-int32_t step;    // n
+static Movement_FSMTypeDef mode;
+static float count;     // init for the count counter
+static float lastcount; // c_i-1
+static float nextcount; // c_i
+static int32_t step;    // the current step we are on (from 0)
+static int32_t n_step;  // this one is decremented for deceleration
+static int32_t goalsteps;
+static Trapezoidal_MoveTypeDef current_move;
 
 int stepcommands[10];
 
 int error = 0;
+
+static TIM_HandleTypeDef htim2 = {
+    .Instance = TIM2};
 
 void TIM2_IRQHandler(void)
 {
@@ -29,36 +34,62 @@ void TIM2_IRQHandler(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  count++;
-  if (count >= nextcount)
+  if (mode != STOP)
   {
-    // do a step
-    HAL_GPIO_WritePin(X_STEP_PORT, X_STEP_PIN, GPIO_PIN_SET);
-    // at 72Mhz 8 NOPs= 112ns > 100ns min step.
-    // okay it even works with none... is HAL GPIO really that slow? I wish I could find my oscilloscope.
-    // for (size_t i = 0; i < 8; i++)
-    // {
-    //   __ASM volatile("NOP");
-    // }
-    HAL_GPIO_WritePin(X_STEP_PORT, X_STEP_PIN, GPIO_PIN_RESET);
-
-    // calculate where to step next
-    // https://www.embedded.com/generate-stepper-motor-speed-profiles-in-real-time/
-    nextcount = nextcount - ((2 * nextcount) / (4 * step + 1));
-
-    // check we aren't too fast
-    if (nextcount > 80)
+    count++;
+    if (count >= nextcount)
     {
+      // do a step
+      HAL_GPIO_WritePin(X_STEP_PORT, X_STEP_PIN, GPIO_PIN_SET);
+      // at 72Mhz 8 NOPs= 112ns > 100ns min step.
+      // okay it even works with none... is HAL GPIO really that slow? I wish I could find my oscilloscope.
+      // for (size_t i = 0; i < 8; i++)
+      // {
+      //   __ASM volatile("NOP");
+      // }
+      HAL_GPIO_WritePin(X_STEP_PORT, X_STEP_PIN, GPIO_PIN_RESET);
+
       step++;
-    }
-    else
-    {
-      // if too fast use the old step period
-      nextcount = 80;
-    }
 
-    lastcount = count;
-    count = 0;
+      // change our goal if necessary
+      if (mode == ACCEL)
+      {
+        if (step >= goalsteps)
+        {
+          goalsteps = current_move.decel_steps;
+          mode = RUN;
+        }
+
+        n_step++;
+
+        // calculate when to step next
+        // https://www.embedded.com/generate-stepper-motor-speed-profiles-in-real-time/
+        nextcount = nextcount - ((2 * nextcount) / (4 * n_step + 1));
+      }
+      else if (mode == RUN)
+      {
+        if (step >= goalsteps)
+        {
+          mode = DECEL;
+          goalsteps = current_move.steps;
+        }
+
+        // use the same count as last step
+        nextcount = count;
+      }
+      else if (mode == DECEL)
+      {
+        if (step >= goalsteps)
+        {
+          mode = STOP;
+        }
+
+        n_step--;
+        nextcount = nextcount - ((2 * nextcount) / (4 * -n_step + 1));
+      }
+
+      count = 0;
+    }
   }
 }
 
@@ -148,18 +179,33 @@ int main(void)
   GPIO_Init();
   TIM2_Init();
 
-  lastcount = STEPPER_TIMER_FREQ * sqrtf(2 * MOTOR_STEP_ANGLE / ANG_ACCEL); // calculate the first step count delay
+  Speed_Profile_ParamsTypeDef profile_params = {
+      .acceleration = ANG_ACCEL,
+      .deceleration = ANG_ACCEL,
+      .current_speed = 0,
+      .final_speed = 0,
+      .max_speed = 15000,
+      .steps = 10 * 360 / DEGREES_PER_STEP,
+      .counter_freq = STEPPER_TIMER_FREQ,
+      .degreesperstep = DEGREES_PER_STEP,
+  };
+
+  generate_trap_profile(profile_params, &current_move);
+
+  goalsteps = current_move.accel_steps;
+  lastcount = current_move.starting_count;
   count = 0;
   nextcount = lastcount;
   step = 1;
-  // stepperiod = 8; // 4us
-
-  HAL_Delay(1000);
+  n_step = 1;
 
   if (HAL_TIM_Base_Start_IT(&htim2) != HAL_OK)
   {
     error = 1;
   }
+
+  HAL_Delay(1000);
+  mode = ACCEL; // this should probably be more generic, then let the planner figure it out.
 
   while (1)
   {
