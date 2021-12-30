@@ -6,4 +6,6 @@
 #include "stm32f1xx_hal_rcc_ex.h"
 #include "stm32f1xx_hal_tim.h"
 
+#include <usb.h>
+
 #endif // MAIN_H

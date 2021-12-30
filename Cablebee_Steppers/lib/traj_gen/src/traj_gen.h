@@ -35,7 +35,7 @@ typedef struct
     float steps;
     // the number of steps to be accelerating for to reach the desired velocity
     float accel_steps;
-    // the number of steps to decelerate (right now, to zero)
+    // the number of steps to decelerate
     float decel_steps;
     // the first delay, (TODO) I think this may need work starting from arbitrary speeds
     float starting_count;

@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "pins_bttskrminie3v2.h": "c"
+        "pins_bttskrminie3v2.h": "c",
+        "usbh_conf_template.h": "c",
+        "usbd_cdc_if_template.h": "c",
+        "usb.h": "c"
     }
 }
