@@ -23,8 +23,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <comm.h>
+// #include <comm.h>
 #include <traj_gen.h>
+#include <old_main.h>
 
 /* USER CODE END Includes */
 
@@ -93,6 +94,8 @@ int main(void)
   MX_TIM2_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start_IT(&htim2);
+  old_main();
 
   /* USER CODE END 2 */
 
@@ -133,8 +136,7 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -171,7 +173,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 72-1;
+  htim2.Init.Prescaler = 72 - 1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -197,7 +199,6 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
-
 }
 
 /**
@@ -216,31 +217,29 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, XSTOP_Pin|YSTOP_Pin|ZSTOP_Pin|ZDIR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, XSTOP_Pin | YSTOP_Pin | ZSTOP_Pin | ZDIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, ZSTP_Pin|ZEN_Pin|YDIR_Pin|YSTP_Pin
-                          |YEN_Pin|XDIR_Pin|XSTP_Pin|XEN_Pin
-                          |E0STP_Pin|E0DIR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, ZSTP_Pin | ZEN_Pin | YDIR_Pin | YSTP_Pin | YEN_Pin | XDIR_Pin | XSTP_Pin | XEN_Pin | E0STP_Pin | E0DIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(E0EN_GPIO_Port, E0EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : XSTOP_Pin YSTOP_Pin ZSTOP_Pin ZDIR_Pin */
-  GPIO_InitStruct.Pin = XSTOP_Pin|YSTOP_Pin|ZSTOP_Pin|ZDIR_Pin;
+  GPIO_InitStruct.Pin = XSTOP_Pin | YSTOP_Pin | ZSTOP_Pin | ZDIR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA2 PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_9;
+  GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA3 PA10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_10;
+  GPIO_InitStruct.Pin = GPIO_PIN_3 | GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -248,9 +247,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : ZSTP_Pin ZEN_Pin YDIR_Pin YSTP_Pin
                            YEN_Pin XDIR_Pin XSTP_Pin XEN_Pin
                            E0STP_Pin E0DIR_Pin */
-  GPIO_InitStruct.Pin = ZSTP_Pin|ZEN_Pin|YDIR_Pin|YSTP_Pin
-                          |YEN_Pin|XDIR_Pin|XSTP_Pin|XEN_Pin
-                          |E0STP_Pin|E0DIR_Pin;
+  GPIO_InitStruct.Pin = ZSTP_Pin | ZEN_Pin | YDIR_Pin | YSTP_Pin | YEN_Pin | XDIR_Pin | XSTP_Pin | XEN_Pin | E0STP_Pin | E0DIR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
@@ -276,11 +273,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(E0EN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB6 PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
@@ -302,7 +298,7 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
