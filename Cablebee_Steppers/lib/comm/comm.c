@@ -2,7 +2,7 @@
 
 int parseSerialCommand(uint8_t bytes[], uint8_t length)
 {
-    uint8_t buffer_out[USART_BUFFER];
+    uint8_t buffer_out[0];
 
     struct Packet packet_out;
 
