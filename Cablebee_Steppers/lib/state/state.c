@@ -1,28 +1,4 @@
-#include "main.h"
-#include <traj_gen.h>
-
-#define MOTOR_STEP_ANGLE 1.8f // deg
-#define MICROSTEPS 8
-#define DEGREES_PER_STEP (MOTOR_STEP_ANGLE / MICROSTEPS)
-#define CLOCK_FREQ 72000000                       // Hz
-#define STEPPER_TIMER_FREQ 1000000                // Hz
-#define MIN_STEP_PERIOD 80                        // us
-#define ANG_ACCEL 500000                          // deg/s^2
-#define STEP_ACCEL (ANG_ACCEL * MOTOR_STEP_ANGLE) // stp/s^2
-
-// speed control params
-static Movement_FSMTypeDef mode;
-static float count;     // init for the count counter
-static float lastcount; // c_i-1
-static float nextcount; // c_i
-static int32_t step;    // the current step we are on (from 0)
-static int32_t n_step;  // this one is decremented for deceleration
-static int32_t goalsteps;
-static Trapezoidal_MoveTypeDef current_move;
-
-int stepcommands[10];
-
-int error = 0;
+#include "state.h"
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -74,6 +50,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
                 if (step >= goalsteps)
                 {
                     mode = STOP;
+
+                    nextMove();
+                    return;
                 }
 
                 n_step--;
@@ -85,43 +64,52 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
 }
 
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim_base)
+void nextMove(void)
 {
-    __HAL_RCC_TIM2_CLK_ENABLE();
-    HAL_NVIC_SetPriority(TIM2_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(TIM2_IRQn);
+    // move to next command
+    // stop if we are out of moves
+    if (read_ptr != write_ptr)
+    {
+        goalsteps = command_buffer[read_ptr].accel_steps;
+        lastcount = command_buffer[read_ptr].starting_count;
+        count = 0;
+        nextcount = lastcount;
+        step = 1;
+        n_step = 1;
+        mode = ACCEL;
+
+        read_ptr++;
+        return;
+    }
 }
 
-int old_main(void)
+void initState(void)
 {
+    read_ptr = 0;
+    write_ptr = 0;
 
     HAL_GPIO_WritePin(XEN_GPIO_Port, XEN_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_RESET);
 
-    Speed_Profile_ParamsTypeDef profile_params = {
-        .current_speed = 0,
-        .max_speed = 15000,
-        .final_speed = 0,
-        .acceleration = ANG_ACCEL,
-        .deceleration = ANG_ACCEL,
-        .steps = 10 * 360 / DEGREES_PER_STEP,
-        .degreesperstep = DEGREES_PER_STEP,
-        .counter_freq = STEPPER_TIMER_FREQ,
-    };
+    Speed_Profile_ParamsTypeDef profile_params;
+    for (size_t i = 1; i < 6; i++)
+    {
+        profile_params = (Speed_Profile_ParamsTypeDef){
+            .current_speed = 0,
+            .max_speed = 5000,
+            .final_speed = 0,
+            .acceleration = ANG_ACCEL,
+            .deceleration = ANG_ACCEL,
+            .steps = i * 360 / DEGREES_PER_STEP, // DONT USE ZERO
+            .degreesperstep = DEGREES_PER_STEP,
+            .counter_freq = STEPPER_TIMER_FREQ,
+        };
+        generate_trap_profile(profile_params, &command_buffer[write_ptr]);
+        write_ptr++; //TODO redundant now, but not when we use the buffer
+    }
 
-    generate_trap_profile(profile_params, &current_move);
-
-    goalsteps = current_move.accel_steps;
-    lastcount = current_move.starting_count;
-    count = 0;
-    nextcount = lastcount;
-    step = 1;
-    n_step = 1;
+    nextMove();
 
     HAL_Delay(1000);
     mode = ACCEL; // this should probably be more generic, then let the planner figure it out.
-
-    while (1)
-    {
-    }
 }

@@ -25,7 +25,7 @@
 /* USER CODE BEGIN Includes */
 // #include <comm.h>
 #include <traj_gen.h>
-#include <old_main.h>
+#include <state.h>
 
 /* USER CODE END Includes */
 
@@ -95,8 +95,8 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
-  old_main();
-
+  initState();
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
