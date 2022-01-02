@@ -23,6 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <comm.h>
+#include <traj_gen.h>
 
 /* USER CODE END Includes */
 
