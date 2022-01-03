@@ -24,26 +24,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
             {
                 if (step >= goalsteps)
                 {
-                    goalsteps = current_move.decel_steps;
+                    goalsteps = command_buffer[read_ptr].decel_steps;
                     mode = RUN;
                 }
-
-                n_step++;
-
-                // calculate when to step next
-                // https://www.embedded.com/generate-stepper-motor-speed-profiles-in-real-time/
-                nextcount = nextcount - ((2 * nextcount) / (4 * n_step + 1));
+                else
+                {
+                    n_step++;
+                    // calculate when to step next
+                    // https://www.embedded.com/generate-stepper-motor-speed-profiles-in-real-time/
+                    nextcount = nextcount - ((2 * nextcount) / (4 * n_step + 1));
+                }
             }
             else if (mode == RUN)
             {
                 if (step >= goalsteps)
                 {
                     mode = DECEL;
-                    goalsteps = current_move.steps;
+                    goalsteps = command_buffer[read_ptr].steps;
                 }
 
                 // use the same count as last step
-                nextcount = count;
+                // nextcount = count;
             }
             else if (mode == DECEL)
             {
@@ -51,6 +52,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
                 {
                     mode = STOP;
 
+                    // finished this move so read the next one
+                    read_ptr++;
                     nextMove();
                     return;
                 }
@@ -71,14 +74,12 @@ void nextMove(void)
     if (read_ptr != write_ptr)
     {
         goalsteps = command_buffer[read_ptr].accel_steps;
-        lastcount = command_buffer[read_ptr].starting_count;
+        nextcount = command_buffer[read_ptr].starting_count;
         count = 0;
-        nextcount = lastcount;
         step = 1;
         n_step = 1;
         mode = ACCEL;
 
-        read_ptr++;
         return;
     }
 }
@@ -92,15 +93,15 @@ void initState(void)
     HAL_GPIO_WritePin(XDIR_GPIO_Port, XDIR_Pin, GPIO_PIN_RESET);
 
     Speed_Profile_ParamsTypeDef profile_params;
-    for (size_t i = 1; i < 6; i++)
+    for (size_t i = 2; i < 10; i++)
     {
         profile_params = (Speed_Profile_ParamsTypeDef){
             .current_speed = 0,
-            .max_speed = 5000,
+            .max_speed = i * 0.5 * 10.0f * 360.0f / DEGREES_PER_STEP,
             .final_speed = 0,
             .acceleration = ANG_ACCEL,
             .deceleration = ANG_ACCEL,
-            .steps = i * 360 / DEGREES_PER_STEP, // DONT USE ZERO
+            .steps = 5 * 360.0f / DEGREES_PER_STEP, // DONT USE ZERO
             .degreesperstep = DEGREES_PER_STEP,
             .counter_freq = STEPPER_TIMER_FREQ,
         };
@@ -109,7 +110,4 @@ void initState(void)
     }
 
     nextMove();
-
-    HAL_Delay(1000);
-    mode = ACCEL; // this should probably be more generic, then let the planner figure it out.
 }

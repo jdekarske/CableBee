@@ -5,7 +5,7 @@
 void generate_trap_profile(Speed_Profile_ParamsTypeDef params, Trapezoidal_MoveTypeDef *out)
 {
     // the number of steps needed to accelerate to the desired speed
-    float max_speed_lim = (params.max_speed * params.max_speed) / (2 * params.degreesperstep * params.acceleration);
+    float max_speed_lim = (params.max_speed * params.max_speed) / (2.0f * params.acceleration);
     // the number of steps before deceleration starts
     float accel_lim = (params.steps * params.deceleration) / (params.acceleration + params.deceleration);
 
@@ -24,5 +24,5 @@ void generate_trap_profile(Speed_Profile_ParamsTypeDef params, Trapezoidal_MoveT
         out->accel_steps = out->decel_steps;
     }
 
-    out->starting_count = 0.676f * params.counter_freq * sqrtf(2 * params.degreesperstep / params.acceleration);
+    out->starting_count = 0.676f * params.counter_freq * sqrtf(2 / params.acceleration);
 }
